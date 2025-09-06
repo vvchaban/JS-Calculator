@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javascript Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .author { color: #4CAF50; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        
+        .container { display: flex; gap: 20px; max-width: 1000px; width: 100%; }
+        
+        .instructions { 
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+            border-radius: 16px; padding: 20px; width: 300px; 
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .instructions h3 { color: white; margin-bottom: 15px; }
+        .instructions h4 { color: rgba(255,255,255,0.9); margin: 10px 0 5px 0; font-size: 14px; }
+        .instructions p { color: rgba(255,255,255,0.8); font-size: 13px; margin: 3px 0; }
+        
+        .calculator { 
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+            border-radius: 16px; padding: 20px; 
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .display { 
+            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; 
+            margin-bottom: 20px; text-align: right; min-height: 80px;
+        }
+        
+        .prev { color: rgba(255,255,255,0.6); font-size: 16px; margin-bottom: 5px; }
+        .curr { color: white; font-size: 36px; font-weight: 600; }
+        
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        
+        .btn { 
+            background: rgba(255,255,255,0.1); border: none; border-radius: 12px; 
+            padding: 15px; font-size: 18px; color: white; cursor: pointer; 
+            transition: background 0.1s; border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn:hover { background: rgba(255,255,255,0.2); }
+        .btn:active { background: rgba(255,255,255,0.3); }
+        
+        .btn.num { background: rgba(255,255,255,0.15); }
+        .btn.op { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .btn.clear { background: rgba(244,67,54,0.2); color: #f44336; }
+        .btn.equals { background: linear-gradient(135deg, #4caf50, #45a049); grid-column: span 2; }
+        
+        .history { 
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+            border-radius: 16px; padding: 20px; width: 300px; max-height: 500px; 
+            overflow-y: auto; border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .history h3 { color: white; margin-bottom: 15px; }
+        .history-item { 
+            background: rgba(255,255,255,0.05); border-radius: 8px; 
+            padding: 10px; margin-bottom: 8px; cursor: pointer;
+            transition: background 0.1s;
+        }
+        
+        .history-item:hover { background: rgba(255,255,255,0.1); }
+        .history-calc { color: rgba(255,255,255,0.8); font-size: 14px; }
+        .history-result { color: white; font-weight: 600; }
+        .history-time { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 2px; }
+        
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .instructions, .history { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="author">Brought to you by Prof. Vitaly. V. Chaban</div>
+    
+    <div class="container">
+        <div class="instructions">
+            <h3>Instructions</h3>
+            <h4>Basic Operations</h4>
+            <p><strong>AC</strong> - All Clear</p>
+            <p><strong>⌫</strong> - Delete last digit</p>
+            <p><strong>%</strong> - Percentage</p>
+            <p><strong>÷</strong> - Division</p>
+            
+            <h4>Arithmetic</h4>
+            <p><strong>×</strong> - Multiplication</p>
+            <p><strong>−</strong> - Subtraction</p>
+            <p><strong>+</strong> - Addition</p>
+            <p><strong>=</strong> - Calculate (or Enter)</p>
+            
+            <h4>Keyboard</h4>
+            <p><strong>0-9</strong> - Numbers</p>
+            <p><strong>.</strong> - Decimal</p>
+            <p><strong>Enter</strong> - Calculate</p>
+            <p><strong>Escape</strong> - Clear</p>
+        </div>
+        
+        <div class="calculator">
+            <div class="display">
+                <div class="prev" id="prev"></div>
+                <div class="curr" id="curr">0</div>
+            </div>
+            <div class="buttons">
+                <button class="btn clear" onclick="calc.clear()">AC</button>
+                <button class="btn op" onclick="calc.delete()">⌫</button>
+                <button class="btn op" onclick="calc.operation('%')">%</button>
+                <button class="btn op" onclick="calc.operation('÷')">÷</button>
+                
+                <button class="btn num" onclick="calc.number('7')">7</button>
+                <button class="btn num" onclick="calc.number('8')">8</button>
+                <button class="btn num" onclick="calc.number('9')">9</button>
+                <button class="btn op" onclick="calc.operation('×')">×</button>
+                
+                <button class="btn num" onclick="calc.number('4')">4</button>
+                <button class="btn num" onclick="calc.number('5')">5</button>
+                <button class="btn num" onclick="calc.number('6')">6</button>
+                <button class="btn op" onclick="calc.operation('−')">−</button>
+                
+                <button class="btn num" onclick="calc.number('1')">1</button>
+                <button class="btn num" onclick="calc.number('2')">2</button>
+                <button class="btn num" onclick="calc.number('3')">3</button>
+                <button class="btn op" onclick="calc.operation('+')">+</button>
+                
+                <button class="btn num" onclick="calc.number('0')">0</button>
+                <button class="btn num" onclick="calc.number('.')">.</button>
+                <button class="btn equals" onclick="calc.equals()">=</button>
+            </div>
+        </div>
+        
+        <div class="history">
+            <h3>History</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Ultra-optimized calculator with minimal overhead
+        class FastCalculator {
+            constructor() {
+                this.prev = '';
+                this.curr = '0';
+                this.op = null;
+                this.reset = false;
+                this.history = [];
+                
+                // Cache DOM elements once
+                this.prevEl = document.getElementById('prev');
+                this.currEl = document.getElementById('curr');
+                this.historyEl = document.getElementById('history-list');
+                
+                // Load history immediately
+                this.loadHistory();
+                
+                // Setup keyboard
+                document.addEventListener('keydown', (e) => this.handleKey(e));
+            }
+            
+            // Direct DOM updates - no intermediate variables
+            updateDisplay() {
+                this.currEl.textContent = this.curr;
+                this.prevEl.textContent = this.op ? `${this.prev} ${this.op}` : '';
+            }
+            
+            // Optimized number input
+            number(n) {
+                if (this.reset) {
+                    this.curr = '';
+                    this.reset = false;
+                }
+                
+                if (n === '.' && this.curr.includes('.')) return;
+                if (this.curr === '0' && n !== '.') {
+                    this.curr = n;
+                } else {
+                    this.curr += n;
+                }
+                
+                this.updateDisplay();
+            }
+            
+            // Optimized operation handling
+            operation(op) {
+                if (this.curr === '') return;
+                if (this.prev !== '') this.equals();
+                
+                this.op = op;
+                this.prev = this.curr;
+                this.reset = true;
+                this.updateDisplay();
+            }
+            
+            // Ultra-fast calculation
+            equals() {
+                if (this.prev === '' || this.curr === '') return;
+                
+                const a = parseFloat(this.prev);
+                const b = parseFloat(this.curr);
+                let result;
+                
+                switch (this.op) {
+                    case '+': result = a + b; break;
+                    case '−': result = a - b; break;
+                    case '×': result = a * b; break;
+                    case '÷': result = b === 0 ? 'Error' : a / b; break;
+                    case '%': result = (a * b) / 100; break;
+                    default: return;
+                }
+                
+                // Add to history immediately
+                this.addHistory(this.prev, this.op, this.curr, result);
+                
+                this.curr = result.toString();
+                this.prev = '';
+                this.op = null;
+                this.reset = true;
+                this.updateDisplay();
+            }
+            
+            // Optimized clear
+            clear() {
+                this.prev = '';
+                this.curr = '0';
+                this.op = null;
+                this.reset = false;
+                this.updateDisplay();
+            }
+            
+            // Optimized delete
+            delete() {
+                if (this.curr === 'Error') {
+                    this.clear();
+                    return;
+                }
+                this.curr = this.curr.slice(0, -1) || '0';
+                this.updateDisplay();
+            }
+            
+            // Ultra-fast history management
+            addHistory(a, op, b, result) {
+                const item = {
+                    calc: `${a} ${op} ${b}`,
+                    result: result.toString(),
+                    time: Date.now()
+                };
+                
+                this.history.unshift(item);
+                if (this.history.length > 20) this.history.pop();
+                
+                this.updateHistory();
+                this.saveHistory();
+            }
+            
+            // Efficient history display
+            updateHistory() {
+                if (this.history.length === 0) {
+                    this.historyEl.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; margin-top: 20px;">No calculations yet</p>';
+                    return;
+                }
+                
+                // Use template literals for speed
+                this.historyEl.innerHTML = this.history.map(item => `
+                    <div class="history-item" onclick="calc.useResult('${item.result}')">
+                        <div class="history-calc">${item.calc}</div>
+                        <div class="history-result">= ${item.result}</div>
+                        <div class="history-time">${this.formatTime(item.time)}</div>
+                    </div>
+                `).join('');
+            }
+            
+            // Fast time formatting
+            formatTime(time) {
+                const diff = Date.now() - time;
+                if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
+                if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+                return new Date(time).toLocaleTimeString();
+            }
+            
+            // Use result from history
+            useResult(result) {
+                this.curr = result;
+                this.reset = true;
+                this.updateDisplay();
+            }
+            
+            // Optimized keyboard handling
+            handleKey(e) {
+                const key = e.key;
+                if (key >= '0' && key <= '9' || key === '.') {
+                    this.number(key);
+                } else if (key === '+' || key === '-') {
+                    this.operation(key === '+' ? '+' : '−');
+                } else if (key === '*') {
+                    this.operation('×');
+                } else if (key === '/') {
+                    e.preventDefault();
+                    this.operation('÷');
+                } else if (key === '%') {
+                    this.operation('%');
+                } else if (key === 'Enter' || key === '=') {
+                    this.equals();
+                } else if (key === 'Escape') {
+                    this.clear();
+                } else if (key === 'Backspace') {
+                    this.delete();
+                }
+            }
+            
+            // Simple localStorage - no server overhead
+            saveHistory() {
+                try {
+                    localStorage.setItem('calc-history', JSON.stringify(this.history));
+                } catch (e) {
+                    console.warn('Storage failed:', e);
+                }
+            }
+            
+            loadHistory() {
+                try {
+                    const saved = localStorage.getItem('calc-history');
+                    if (saved) {
+                        this.history = JSON.parse(saved);
+                        this.updateHistory();
+                    }
+                } catch (e) {
+                    console.warn('Load failed:', e);
+                    this.history = [];
+                }
+            }
+        }
+        
+        // Initialize calculator immediately
+        const calc = new FastCalculator();
+    </script>
+</body>
+</html>
